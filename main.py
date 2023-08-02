@@ -212,7 +212,7 @@ else:
 # Only render the expander when this is the final re-render
 if st.session_state["expander_state"] == False:
     with st.expander("CXR Findings", expanded=st.session_state["expander_state"]):
-        st.write(', '.join(record['Finding Labels']))
+        st.write(', '.join(record['Finding Labels']).replace('_', ' '))
 else:
     st.write('**Loading...**')
 
