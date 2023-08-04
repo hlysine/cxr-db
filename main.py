@@ -5,6 +5,7 @@ import time
 import os.path
 import subprocess
 from streamlit_javascript import st_javascript as st_js
+import urllib.parse
 
 # Define constants
 path = 'sample/'
@@ -69,6 +70,15 @@ st.write("""
 
 Filter and view the chest X-ray and diagnosis data from the NIH Chest X-ray database.
 """)
+
+site_link = 'https://huggingface.co/spaces/lysine/cxr-db'
+st_cloud = os.path.isdir('/home/appuser')
+if st_cloud:
+    st.warning(f"""
+**cxr-db has a new home with increased stability. Please access cxr-db from the new link below:**
+
+Link to the new site: [{site_link}]({site_link}?{urllib.parse.urlencode(st.experimental_get_query_params(), doseq=True)})
+""", icon='✨')
 
 
 @st.cache_data(ttl=60 * 60)
