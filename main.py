@@ -13,8 +13,14 @@ path = 'sample/'
 if not os.path.isfile(path + 'sample_labels.csv'):
     subprocess.run(['pip', 'uninstall', '-y', 'kaggle'])
     subprocess.run(['pip', 'install', '--user', 'kaggle'])
-    subprocess.run(['/home/appuser/.local/bin/kaggle', 'datasets', 'download',
-                    'nih-chest-xrays/sample', '--unzip'])
+    try:
+        # Streamlit cloud
+        subprocess.run(['/home/appuser/.local/bin/kaggle', 'datasets', 'download',
+                        'nih-chest-xrays/sample', '--unzip'])
+    except:
+        # Hugging Face
+        subprocess.run(['/home/user/.local/bin/kaggle', 'datasets', 'download',
+                        'nih-chest-xrays/sample', '--unzip'])
 
 # Configure libraries
 st.set_page_config(
