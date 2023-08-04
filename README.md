@@ -1,3 +1,14 @@
+---
+title: cxr-db
+emoji: '🎞️'
+sdk: streamlit
+python_version: 3.11
+sdk_version: 1.22.0
+app_file: main.py
+colorFrom: blue
+colorTo: gray
+---
+
 # cxr-db
 
 A single-page web app presenting Chest X-rays from the NIH Chest X-ray dataset.
