@@ -10,19 +10,6 @@ import urllib.parse
 # Define constants
 path = 'sample/'
 
-# Download data from kaggle
-if not os.path.isfile(path + 'sample_labels.csv'):
-    subprocess.run(['pip', 'uninstall', '-y', 'kaggle'])
-    subprocess.run(['pip', 'install', '--user', 'kaggle'])
-    try:
-        # Streamlit cloud
-        subprocess.run(['/home/appuser/.local/bin/kaggle', 'datasets', 'download',
-                        'nih-chest-xrays/sample', '--unzip'])
-    except:
-        # Hugging Face
-        subprocess.run(['/home/user/.local/bin/kaggle', 'datasets', 'download',
-                        'nih-chest-xrays/sample', '--unzip'])
-
 # Configure libraries
 st.set_page_config(
     page_title="CXR Database",
@@ -37,6 +24,53 @@ if "expander_state" not in st.session_state:
     st.session_state["expander_state"] = True
 if "history" not in st.session_state:
     st.session_state["history"] = []
+if "forceload" not in st.session_state:
+    st.session_state["forceload"] = False
+
+# Show title and site check
+st.write("""
+# CXR Database
+
+Filter and view the chest X-ray and diagnosis data from the NIH Chest X-ray database.
+""")
+
+site_link = 'https://lysine-cxr-db.hf.space/'
+st_cloud = os.path.isdir('/home/appuser')
+if st_cloud:
+    st.warning(f"""
+**cxr-db has a new home with increased stability. Please access cxr-db from the new link below:**
+
+Link to the new site: [{site_link}]({site_link}?{urllib.parse.urlencode(st.experimental_get_query_params(), doseq=True)})
+""", icon='✨')
+    if not st.session_state["forceload"]:
+        with st.expander("If the new site is not working for you"):
+            if st.button("Load the app here"):
+                st.session_state["forceload"] = True
+                st.experimental_rerun()
+        st.stop()
+
+# Download data from kaggle
+if not os.path.isfile(path + 'sample_labels.csv'):
+    placeholder = st.empty()
+    try:
+        placeholder.info(
+            "**Downloading data.**\nThis may take a minute, but it only needs to be done once.", icon="⏳")
+        subprocess.run(['pip', 'uninstall', '-y', 'kaggle'])
+        subprocess.run(['pip', 'install', '--user', 'kaggle'])
+        try:
+            # Streamlit cloud
+            subprocess.run(['/home/appuser/.local/bin/kaggle', 'datasets', 'download',
+                            'nih-chest-xrays/sample', '--unzip'])
+        except:
+            # Hugging Face
+            subprocess.run(['/home/user/.local/bin/kaggle', 'datasets', 'download',
+                            'nih-chest-xrays/sample', '--unzip'])
+        placeholder.empty()
+    except Exception as error:
+        placeholder.warning(
+            "An error occurred while downloading the data. Please take a screenshot of the whole page and send to the developer.")
+        st.write(error)
+        st.stop()
 
 
 def query_to_filters():
@@ -65,22 +99,6 @@ def filters_to_query():
 filters = query_to_filters()
 
 
-st.write("""
-# CXR Database
-
-Filter and view the chest X-ray and diagnosis data from the NIH Chest X-ray database.
-""")
-
-site_link = 'https://huggingface.co/spaces/lysine/cxr-db'
-st_cloud = os.path.isdir('/home/appuser')
-if st_cloud:
-    st.warning(f"""
-**cxr-db has a new home with increased stability. Please access cxr-db from the new link below:**
-
-Link to the new site: [{site_link}]({site_link}?{urllib.parse.urlencode(st.experimental_get_query_params(), doseq=True)})
-""", icon='✨')
-
-
 @st.cache_data(ttl=60 * 60)
 def load_records():
     """
@@ -101,7 +119,13 @@ def load_records():
     return record_df
 
 
-record_df = load_records()
+try:
+    record_df = load_records()
+except Exception as error:
+    st.warning(
+        "An error occurred while loading data. Please refresh the page to try again.")
+    st.write(error)
+    st.stop()
 
 
 # ===============================
