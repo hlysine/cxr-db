@@ -13,6 +13,8 @@ colorTo: gray
 
 A single-page web app presenting Chest X-rays from the NIH Chest X-ray dataset.
 
+[![Open cxr-db on HF Spaces](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-xl-dark.svg)](https://lysine-cxr-db.hf.space/)
+
 [![Open cxr-db on Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://cxr-db.streamlit.app)
 
 This app features over 5000 chest X-rays from the dataset. You can load a random CXR after setting your filters.
