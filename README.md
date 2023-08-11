@@ -29,3 +29,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 * Thanks [National Institutes of Health Chest X-Ray Dataset](https://www.kaggle.com/datasets/nih-chest-xrays/sample) for providing quality CXR data.
 * Thanks [kaggle](https://www.kaggle.com/) for hosting the CXR dataset and providing convenient tools to download it.
 * Thanks [Streamlit](https://streamlit.io/) for making data apps simple to create and for hosting the app online for free.
+* Thanks [Hugging Face](https://huggingface.co/) for hosting the app online for free.
