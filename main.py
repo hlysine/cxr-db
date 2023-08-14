@@ -32,6 +32,10 @@ st.write("""
 # CXR Database
 
 Filter and view the chest X-ray and diagnosis data from the NIH Chest X-ray database.
+
+**Points to note**
+
+- The provided findings may not be 100% accurate and may not be the only findings in the image.
 """)
 
 site_link = 'https://lysine-cxr-db.hf.space/'
