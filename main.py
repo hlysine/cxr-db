@@ -8,7 +8,7 @@ from streamlit_javascript import st_javascript as st_js
 import urllib.parse
 
 # Define constants
-path = 'sample/'
+path = 'data/'
 
 # Configure libraries
 st.set_page_config(
@@ -54,7 +54,7 @@ Link to the new site: [{site_link}]({site_link}?{urllib.parse.urlencode(st.exper
         st.stop()
 
 # Download data from kaggle
-if not os.path.isfile(path + 'sample_labels.csv'):
+if not os.path.isfile(path + 'Data_Entry_2017.csv'):
     placeholder = st.empty()
     try:
         placeholder.info(
@@ -64,11 +64,11 @@ if not os.path.isfile(path + 'sample_labels.csv'):
         try:
             # Streamlit cloud
             subprocess.run(['/home/appuser/.local/bin/kaggle', 'datasets', 'download',
-                            'nih-chest-xrays/sample', '--unzip'])
+                            'nih-chest-xrays/data', '--unzip'])
         except:
             # Hugging Face
             subprocess.run(['/home/user/.local/bin/kaggle', 'datasets', 'download',
-                            'nih-chest-xrays/sample', '--unzip'])
+                            'nih-chest-xrays/data', '--unzip'])
         placeholder.empty()
     except Exception as error:
         placeholder.warning(
@@ -109,15 +109,13 @@ def load_records():
     Load and convert the ECG records to a DataFrame.
     One record for each ECG taken.
     """
-    def array_split(x): return x.split('|')
-    def age_parse(x): return int(x[:-1])
+    def array_split(x): return x.replace('_', ' ').split('|')
 
     record_df = pd.read_csv(
-        path+'sample_labels.csv',
+        path+'Data_Entry_2017.csv',
         index_col='Image Index',
         converters={
-            'Finding Labels': array_split,
-            'Patient Age': age_parse
+            'Finding Labels': array_split
         }
     )
     return record_df
@@ -163,7 +161,7 @@ with st.form("filter_form"):
         for i in range(len(findings)):
             key = findings[i]
             selected_code = cols[i % 4].checkbox(
-                key.replace('_', ' '), key=f'filter_condition_{i}', value=key in filters['finding'] if 'finding' in filters else False)
+                key, key=f'filter_condition_{i}', value=key in filters['finding'] if 'finding' in filters else False)
             if selected_code:
                 if 'finding' not in filters:
                     filters['finding'] = [key]
@@ -242,10 +240,18 @@ with col3:
 # CXR Image
 # ===============================
 
+def locate_image(filename):
+    partitions = [str(i).zfill(3) for i in range(1, 13)]
+    for partition in partitions:
+        image_path = f"{path}images_{partition}/images/{record.name}"
+        if os.path.isfile(image_path):
+            return image_path
+    return None
+
 
 if st.session_state["expander_state"] == False:
     with st.spinner('Loading CXR...'):
-        st.image(f"{path}images/{record.name}")
+        st.image(locate_image(record.name))
 else:
     st.info('**Loading CXR...**', icon='🔃')
 
@@ -256,7 +262,7 @@ else:
 # Only render the expander when this is the final re-render
 if st.session_state["expander_state"] == False:
     with st.expander("CXR Findings", expanded=st.session_state["expander_state"]):
-        st.write(', '.join(record['Finding Labels']).replace('_', ' '))
+        st.write(', '.join(record['Finding Labels']))
 else:
     st.write('**Loading...**')
 
