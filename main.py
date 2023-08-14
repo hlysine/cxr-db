@@ -9,7 +9,7 @@ import urllib.parse
 import psutil
 
 # Define constants
-path = 'data/'
+path = 'sample/'
 
 # Configure libraries
 st.set_page_config(
@@ -55,7 +55,7 @@ Link to the new site: [{site_link}]({site_link}?{urllib.parse.urlencode(st.exper
         st.stop()
 
 # Download data from kaggle
-if not os.path.isfile(path + 'Data_Entry_2017.csv'):
+if not os.path.isfile(path + 'sample_labels.csv'):
     placeholder = st.empty()
     already_downloading = False
     for proc in psutil.process_iter():
@@ -68,17 +68,17 @@ if not os.path.isfile(path + 'Data_Entry_2017.csv'):
     if not already_downloading:
         try:
             placeholder.info(
-                "**Downloading data.**\nThis may take a few minutes, but it only needs to be done once.", icon="⏳")
+                "**Downloading data.**\nThis may take a minute, but it only needs to be done once.", icon="⏳")
             subprocess.run(['pip', 'uninstall', '-y', 'kaggle'])
             subprocess.run(['pip', 'install', '--user', 'kaggle'])
             try:
                 # Streamlit cloud
                 subprocess.run(['/home/appuser/.local/bin/kaggle', 'datasets', 'download',
-                                'nih-chest-xrays/data', '--unzip'])
+                                'nih-chest-xrays/sample', '--unzip'])
             except:
                 # Hugging Face
                 subprocess.run(['/home/user/.local/bin/kaggle', 'datasets', 'download',
-                                'nih-chest-xrays/data', '--unzip'])
+                                'nih-chest-xrays/sample', '--unzip'])
             placeholder.empty()
         except Exception as error:
             placeholder.warning(
@@ -123,13 +123,15 @@ def load_records():
     Load and convert the ECG records to a DataFrame.
     One record for each ECG taken.
     """
-    def array_split(x): return x.replace('_', ' ').split('|')
+    def array_split(x): return x.split('|')
+    def age_parse(x): return int(x[:-1])
 
     record_df = pd.read_csv(
-        path+'Data_Entry_2017.csv',
+        path+'sample_labels.csv',
         index_col='Image Index',
         converters={
-            'Finding Labels': array_split
+            'Finding Labels': array_split,
+            'Patient Age': age_parse
         }
     )
     return record_df
@@ -175,7 +177,7 @@ with st.form("filter_form"):
         for i in range(len(findings)):
             key = findings[i]
             selected_code = cols[i % 4].checkbox(
-                key, key=f'filter_condition_{i}', value=key in filters['finding'] if 'finding' in filters else False)
+                key.replace('_', ' '), key=f'filter_condition_{i}', value=key in filters['finding'] if 'finding' in filters else False)
             if selected_code:
                 if 'finding' not in filters:
                     filters['finding'] = [key]
@@ -254,18 +256,10 @@ with col3:
 # CXR Image
 # ===============================
 
-def locate_image(filename):
-    partitions = [str(i).zfill(3) for i in range(1, 13)]
-    for partition in partitions:
-        image_path = f"{path}images_{partition}/images/{record.name}"
-        if os.path.isfile(image_path):
-            return image_path
-    return None
-
 
 if st.session_state["expander_state"] == False:
     with st.spinner('Loading CXR...'):
-        st.image(locate_image(record.name))
+        st.image(f"{path}images/{record.name}")
 else:
     st.info('**Loading CXR...**', icon='🔃')
 
@@ -276,7 +270,7 @@ else:
 # Only render the expander when this is the final re-render
 if st.session_state["expander_state"] == False:
     with st.expander("CXR Findings", expanded=st.session_state["expander_state"]):
-        st.write(', '.join(record['Finding Labels']))
+        st.write(', '.join(record['Finding Labels']).replace('_', ' '))
 else:
     st.write('**Loading...**')
 
